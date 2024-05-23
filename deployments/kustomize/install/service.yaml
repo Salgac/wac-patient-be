@@ -1,0 +1,12 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: xsalgovic-patient-webapi
+spec:
+  selector:
+    pod: xsalgovic-patient-webapi-label
+  ports:
+  - name: http
+    protocol: TCP
+    port: 80
+    targetPort: webapi-port
