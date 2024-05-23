@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
 )
@@ -15,6 +16,11 @@ func main() {
 		json.NewEncoder(w).Encode("Hello World")
 	})
 
+	httpPort := os.Getenv("PORT")
+	if httpPort == "" {
+		httpPort = "8080"
+	}
+
 	log.Println("API is running!")
-	http.ListenAndServe(":4000", router)
+	http.ListenAndServe(":" + httpPort, router)
 }
