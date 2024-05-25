@@ -8,28 +8,11 @@ import (
 	"os"
 	"time"
 
+	"github.com/Salgac/wac-patient-be/pkg/models"
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
-
-type Patient struct {
-	Id            int
-	FirstName     string
-	LastName      string
-	HeathStatuses []HealthStatus
-	Visits        []Visit
-}
-
-type Visit struct {
-	Id     int
-	Time   string // todo
-	Reason string
-}
-
-type HealthStatus struct {
-	Id int
-}
 
 var client *mongo.Client
 
@@ -65,7 +48,7 @@ func getPatients(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	var patients []Patient
+	var patients []models.Patient
 	cursor, err := collection.Find(ctx, bson.M{})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -74,7 +57,7 @@ func getPatients(w http.ResponseWriter, r *http.Request) {
 	defer cursor.Close(ctx)
 
 	for cursor.Next(ctx) {
-		var patient Patient
+		var patient models.Patient
 		cursor.Decode(&patient)
 		patients = append(patients, patient)
 	}
@@ -92,8 +75,35 @@ func setupDb() {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
+	// Create health statuses
+	healthStatuses := []models.HealthStatus{
+		{Id: 1, Description: "Healthy"},
+		{Id: 2, Description: "Recovered from flu"},
+	}
+
+	// Create an ambulance
+	ambulance := models.Ambulance{Id: 1, Name: "Ambulance A"}
+
+	// Create visits
+	visits := []models.Visit{
+		{Id: 1, Ambulance: ambulance, Timestamp: time.Now().Format(time.RFC3339), Reason: "Routine Checkup"},
+		{Id: 2, Ambulance: ambulance, Timestamp: time.Now().AddDate(0, 0, 15).Format(time.RFC3339), Reason: "Emergency"},
+	}
+
 	collection := GetCollection(client)
 	collection.DeleteMany(ctx, bson.M{})
-	collection.InsertOne(ctx, Patient{Id: 69, FirstName: "Jozko", LastName: "Mrkvicka"})
-	collection.InsertOne(ctx, Patient{Id: 420, FirstName: "Anka", LastName: "Mrkvickova"})
+	collection.InsertOne(ctx, models.Patient{
+		Id:             69,
+		FirstName:      "Jozko",
+		LastName:       "Mrkvicka",
+		HealthStatuses: healthStatuses,
+		Visits:         visits,
+	})
+	collection.InsertOne(ctx, models.Patient{
+		Id:             420,
+		FirstName:      "Anka",
+		LastName:       "Mrkvickova",
+		HealthStatuses: []models.HealthStatus{},
+		Visits:         []models.Visit{},
+	})
 }
