@@ -1,4 +1,4 @@
-package main
+package db
 
 import (
 	"context"
@@ -34,7 +34,6 @@ func ConnectDB() *mongo.Client {
 	userName := enviro("AMBULANCE_API_MONGODB_USERNAME", "")
 	password := enviro("AMBULANCE_API_MONGODB_PASSWORD", "")
 	dbName = enviro("AMBULANCE_API_MONGODB_DATABASE", "xsalgovic-patient-wl")
-	collection = enviro("AMBULANCE_API_MONGODB_COLLECTION", "patients")
 
 	// Set client options
 	clientOptions := options.Client().ApplyURI("mongodb://" + userName + ":" + password + "@" + host + ":" + port)
@@ -58,6 +57,6 @@ func ConnectDB() *mongo.Client {
 	return client
 }
 
-func GetCollection(client *mongo.Client) *mongo.Collection {
+func GetCollection(client *mongo.Client, collection string) *mongo.Collection {
 	return client.Database(dbName).Collection(collection)
 }
