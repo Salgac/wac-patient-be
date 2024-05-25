@@ -1,6 +1,6 @@
 package models
 
-type HealthStatus struct {
+type HealthCondition struct {
 	Timestamp string    `json:"timestamp"`
 	Description string `json:"description"`
 }

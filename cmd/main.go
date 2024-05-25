@@ -46,7 +46,7 @@ func setupDb() {
 	defer cancel()
 
 	// Create health statuses
-	healthStatuses := []models.HealthStatus{
+	healthConditions := []models.HealthCondition{
 		{Timestamp: time.Now().Format(time.RFC3339), Description: "Healthy"},
 		{Timestamp: time.Now().AddDate(0, 0, -2).Format(time.RFC3339), Description: "Recovered from flu"},
 	}
@@ -66,15 +66,17 @@ func setupDb() {
 	collection = db.GetCollection(client, "patients")
 	collection.DeleteMany(ctx, bson.M{})
 	collection.InsertOne(ctx, models.Patient{
-		FirstName:      "Jozko",
-		LastName:       "Mrkvicka",
-		HealthStatuses: healthStatuses,
-		Visits:         visits,
+		FirstName:        "Jozko",
+		LastName:         "Mrkvicka",
+		Age:              69,
+		HealthConditions: healthConditions,
+		Visits:           visits,
 	})
 	collection.InsertOne(ctx, models.Patient{
-		FirstName:      "Anka",
-		LastName:       "Mrkvickova",
-		HealthStatuses: []models.HealthStatus{},
-		Visits:         []models.Visit{},
+		FirstName:        "Anka",
+		LastName:         "Mrkvickova",
+		Age:              14,
+		HealthConditions: []models.HealthCondition{},
+		Visits:           []models.Visit{},
 	})
 }
