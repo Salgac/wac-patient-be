@@ -8,10 +8,12 @@ import (
 	"time"
 
 	"github.com/Salgac/wac-patient-be/pkg/db"
-	"github.com/Salgac/wac-patient-be/pkg/handlers"
+	"github.com/Salgac/wac-patient-be/pkg/handling"
 	"github.com/Salgac/wac-patient-be/pkg/models"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -20,14 +22,29 @@ var client *mongo.Client
 func main() {
 	router := mux.NewRouter()
 
+	// Define CORS options
+	corsOptions := handlers.CORS(
+		handlers.AllowedOrigins([]string{"*"}),
+		handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "PATCH"}),
+		handlers.AllowedHeaders([]string{"Origin", "Authorization", "Content-Type", "Accept", "Cache-Control"}),
+		handlers.ExposedHeaders([]string{""}),
+		handlers.MaxAge(86400),
+	)
+
 	// Database
 	client = db.ConnectDB()
 	setupDb()
 
 	// Handling
-	router.HandleFunc("/ambulances", handlers.GetAmbulances(client)).Methods("GET")
+	router.HandleFunc("/ambulances", handling.GetAmbulances(client)).Methods("GET")
 
-	router.HandleFunc("/patients", handlers.GetPatients(client)).Methods("GET")
+	router.HandleFunc("/patients", handling.GetPatients(client)).Methods("GET")
+
+	router.HandleFunc("/patients/{id}/conditions", handling.AddHealthCondition(client)).Methods("POST")
+
+	router.HandleFunc("/patients/{id}/visits", handling.AddVisit(client)).Methods("POST")
+	router.HandleFunc("/patients/{patientId}/visits/{visitId}", handling.DeleteVisit(client)).Methods("DELETE")
+	router.HandleFunc("/patients/{patientId}/visits/{visitId}", handling.UpdateVisit(client)).Methods("PUT")
 
 	// Setup port
 	httpPort := os.Getenv("PORT")
@@ -37,7 +54,8 @@ func main() {
 
 	// Run
 	log.Println("API is running!")
-	http.ListenAndServe(":"+httpPort, router)
+	loggedRouter := handlers.LoggingHandler(log.Writer(), router)
+	http.ListenAndServe(":"+httpPort, corsOptions(loggedRouter))
 }
 
 // setup default db values
@@ -56,11 +74,13 @@ func setupDb() {
 	collection := db.GetCollection(client, "ambulances")
 	collection.DeleteMany(ctx, bson.M{})
 	collection.InsertOne(ctx, ambulance)
+	collection.InsertOne(ctx, models.Ambulance{Name: "Ambulance B"})
+	collection.InsertOne(ctx, models.Ambulance{Name: "Ambulance C"})
 
 	// Create visits
 	visits := []models.Visit{
-		{Ambulance: ambulance, Timestamp: time.Now().Format(time.RFC3339), Reason: "Routine Checkup"},
-		{Ambulance: ambulance, Timestamp: time.Now().AddDate(0, 0, 15).Format(time.RFC3339), Reason: "Emergency"},
+		{Id: primitive.NewObjectID(), Ambulance: ambulance, Timestamp: time.Now().Format(time.RFC3339), Reason: "Routine Checkup", Status: "requested"},
+		{Id: primitive.NewObjectID(), Ambulance: ambulance, Timestamp: time.Now().AddDate(0, 0, 15).Format(time.RFC3339), Reason: "Emergency", Status: "done"},
 	}
 
 	collection = db.GetCollection(client, "patients")

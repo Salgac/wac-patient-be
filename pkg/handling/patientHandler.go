@@ -1,4 +1,4 @@
-package handlers
+package handling
 
 import (
 	"context"
@@ -15,9 +15,6 @@ import (
 // GET
 func GetPatients(client *mongo.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-
 		collection := db.GetCollection(client, "patients")
 
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
