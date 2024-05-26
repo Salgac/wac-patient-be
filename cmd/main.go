@@ -36,15 +36,15 @@ func main() {
 	setupDb()
 
 	// Handling
-	router.HandleFunc("/ambulances", handling.GetAmbulances(client)).Methods("GET")
+	router.HandleFunc("/api/ambulances", handling.GetAmbulances(client)).Methods("GET")
 
-	router.HandleFunc("/patients", handling.GetPatients(client)).Methods("GET")
+	router.HandleFunc("/api/patients", handling.GetPatients(client)).Methods("GET")
 
-	router.HandleFunc("/patients/{id}/conditions", handling.AddHealthCondition(client)).Methods("POST")
+	router.HandleFunc("/api/patients/{id}/conditions", handling.AddHealthCondition(client)).Methods("POST")
 
-	router.HandleFunc("/patients/{id}/visits", handling.AddVisit(client)).Methods("POST")
-	router.HandleFunc("/patients/{patientId}/visits/{visitId}", handling.DeleteVisit(client)).Methods("DELETE")
-	router.HandleFunc("/patients/{patientId}/visits/{visitId}", handling.UpdateVisit(client)).Methods("PUT")
+	router.HandleFunc("/api/patients/{id}/visits", handling.AddVisit(client)).Methods("POST")
+	router.HandleFunc("/api/patients/{patientId}/visits/{visitId}", handling.DeleteVisit(client)).Methods("DELETE")
+	router.HandleFunc("/api/patients/{patientId}/visits/{visitId}", handling.UpdateVisit(client)).Methods("PUT")
 
 	// Setup port
 	httpPort := os.Getenv("PORT")
