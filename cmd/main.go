@@ -78,9 +78,10 @@ func setupDb() {
 	collection.InsertOne(ctx, models.Ambulance{Name: "Ambulance C"})
 
 	// Create visits
+	timestamp := time.Now().Truncate(60*time.Second).Truncate(60*time.Minute)
 	visits := []models.Visit{
-		{Id: primitive.NewObjectID(), Ambulance: ambulance, Timestamp: time.Now().Format(time.RFC3339), Reason: "Routine Checkup", Status: "requested"},
-		{Id: primitive.NewObjectID(), Ambulance: ambulance, Timestamp: time.Now().AddDate(0, 0, 15).Format(time.RFC3339), Reason: "Emergency", Status: "done"},
+		{Id: primitive.NewObjectID(), Ambulance: ambulance, Timestamp: timestamp.AddDate(0, 0, 5).Format(time.RFC3339), Reason: "Routine Checkup", Status: "requested"},
+		{Id: primitive.NewObjectID(), Ambulance: ambulance, Timestamp: timestamp.AddDate(0, 0, 15).Format(time.RFC3339), Reason: "Emergency", Status: "done"},
 	}
 
 	collection = db.GetCollection(client, "patients")
